@@ -231,14 +231,15 @@ inline DeferredConstructedRegexpsPtr getOrSet(const std::vector<StringRef>& patt
     /// already be evicted at the time the compilation starts.
 
     if (bucket.regexps == nullptr) [[unlikely]] {
-        /// insert new entry
-        auto deferred_constructed_regexps =
-                std::make_shared<DeferredConstructedRegexps>([str_patterns, edit_distance]() {
-                    return constructRegexps<save_indices, WithEditDistance>(str_patterns,
-                                                                            edit_distance);
-                });
-        bucket = {std::move(str_patterns), edit_distance, deferred_constructed_regexps};
-    } else if (bucket.patterns != str_patterns || bucket.edit_distance != edit_distance) {
+            /// insert new entry
+            auto deferred_constructed_regexps =
+                    std::make_shared<DeferredConstructedRegexps>([str_patterns, edit_distance]() {
+                        return constructRegexps<save_indices, WithEditDistance>(str_patterns,
+                                                                                edit_distance);
+                    });
+            bucket = {std::move(str_patterns), edit_distance, deferred_constructed_regexps};
+        }
+    else if (bucket.patterns != str_patterns || bucket.edit_distance != edit_distance) {
         /// replace existing entry
         auto deferred_constructed_regexps =
                 std::make_shared<DeferredConstructedRegexps>([str_patterns, edit_distance]() {
