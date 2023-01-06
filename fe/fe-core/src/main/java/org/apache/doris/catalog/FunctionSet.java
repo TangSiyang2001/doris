@@ -2634,19 +2634,15 @@ public class FunctionSet<T> {
                             .createBuiltin("topn_weighted", Lists.newArrayList(t, Type.BIGINT, Type.INT, Type.INT),
                                     new ArrayType(t), t,
                                     "", "", "", "", "", true, false, true, true));
-<<<<<<< HEAD
+
             addBuiltin(AggregateFunction.createBuiltin(HIST, Lists.newArrayList(t), Type.VARCHAR, t,
                     "", "", "", "", "", true, false, true, true));
-=======
 
->>>>>>> 2cf06c2d6... [Feature](aggregate-function) support funtion group_uniq_array
             addBuiltin(AggregateFunction.createBuiltin(HISTOGRAM, Lists.newArrayList(t), Type.VARCHAR, t,
                     "", "", "", "", "", true, false, true, true));
-<<<<<<< HEAD
+
             addBuiltin(AggregateFunction.createBuiltin(HIST, Lists.newArrayList(t, Type.DOUBLE, Type.INT), Type.VARCHAR, t,
                                     "", "", "", "", "", true, false, true, true));
-=======
->>>>>>> 571fe1de3... support optional arguments
 
             addBuiltin(AggregateFunction.createBuiltin(HISTOGRAM, Lists.newArrayList(t, Type.DOUBLE, Type.INT),
                     Type.VARCHAR, t,
