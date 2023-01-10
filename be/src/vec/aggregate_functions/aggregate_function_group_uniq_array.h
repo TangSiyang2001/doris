@@ -17,8 +17,10 @@
 
 #pragma once
 
+#include <glog/logging.h>
 #include <limits>
 
+#include "common/logging.h"
 #include "vec/aggregate_functions/aggregate_function.h"
 #include "vec/aggregate_functions/key_holder_helpers.h"
 #include "vec/columns/column.h"
@@ -50,9 +52,18 @@ struct AggregateFunctionGroupUniqArrayData {
     size_t size() const { return data_set.size(); }
 
     void add(const IColumn& column, size_t row_num) {
+        LOG_INFO("============>ADD: {}",assert_cast<const ColVecType&>(column).get_data()[row_num]);
         data_set.insert(assert_cast<const ColVecType&>(column).get_data()[row_num]);
     }
-    void merge(const SelfType& rhs) { data_set.merge(rhs.data_set); }
+
+    void merge(const SelfType& rhs) {
+        LOG_INFO("==========>MERGE:");
+        for(auto item:rhs.data_set){
+            LOG_INFO("item:{}",item.key);
+        }
+        LOG_INFO("<==========MERGE END");
+        data_set.merge(rhs.data_set);
+    }
 
     void merge(const SelfType& rhs, bool has_limit) {
         if (!has_limit) {
@@ -67,14 +78,19 @@ struct AggregateFunctionGroupUniqArrayData {
         }
     }
 
-    void write(BufferWritable& buf) const { data_set.write(buf); }
+    void write(BufferWritable& buf) const {
+        data_set.write(buf);
+    }
 
-    void read(BufferReadable& buf) { data_set.read(buf); }
+    void read(BufferReadable& buf) {
+        data_set.read(buf);
+    }
 
     void insert_result_into(IColumn& to) const {
         auto& vec = assert_cast<ColVecType&>(to).get_data();
         vec.reserve(size());
         for (auto item : data_set) {
+            LOG_INFO("=========>INSERT:{}",item.key);
             vec.push_back(item.key);
         }
     }
@@ -225,5 +241,7 @@ public:
         }
         to_arr.get_offsets().push_back(to_nested_col.size());
     }
+
+    void reset(AggregateDataPtr place) const override { this->data(place).reset(); }
 };
 } // namespace doris::vectorized

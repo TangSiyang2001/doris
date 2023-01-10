@@ -26,6 +26,7 @@
 #include "vec/core/field.h"
 #include "vec/core/types.h"
 #include "vec/data_types/data_type.h"
+#include "vec/data_types/data_type_time_v2.h"
 
 namespace doris::vectorized {
 
@@ -66,7 +67,7 @@ AggregateFunctionPtr create_aggregate_function_group_uniq_array_impl(
         return do_create_aggregate_function_group_uniq_array<StringRef, HasLimit>(
                 argument_type, std::forward<TArgs>(args)...);
     }
-    //TODO:support extra types
+
     LOG(WARNING) << fmt::format("unsupported input type {} for aggregate function {}",
                                 argument_type->get_name(), name);
     return nullptr;
