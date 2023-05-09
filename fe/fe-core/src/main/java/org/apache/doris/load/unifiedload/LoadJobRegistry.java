@@ -15,25 +15,26 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package org.apache.doris.load.loadv2;
+package org.apache.doris.load.unifiedload;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
-public interface LoadJobRegistry {
+public interface LoadJobRegistry<J extends LoadJobV2> {
 
-    void addLoadJob(LoadJob loadJob);
+    void addLoadJob(J loadJob);
 
-    LoadJob getLoadJob(long loadJobId);
+    J getLoadJob(long loadJobId);
 
-    LoadJob getLoadJob(String labelName);
+    Collection<J> getLoadJobs(Predicate<J> cond);
 
-    List<LoadJob> getLoadJobs(Predicate<LoadJob> cond);
+    Collection<J> getLoadJobs(long dbId, String label, Predicate<J> cond);
 
     void removeLoadJob(long loadJobId);
 
-    int getLoadJobNum(JobState jobState);
+    void removeLoadJob(Predicate<J> cond);
 
-    int getLoadJobNum(Predicate<LoadJob> cond);
+    long getLoadJobNum(Predicate<J> cond);
 
 }

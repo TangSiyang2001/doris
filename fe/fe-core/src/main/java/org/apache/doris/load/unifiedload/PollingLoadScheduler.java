@@ -15,20 +15,34 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package org.apache.doris.load.loadv2;
+package org.apache.doris.load.unifiedload;
 
-// JobState will be persisted in meta data by name, so the order of these state is not important
-// TODO(tsy): better to rename as BulkLoadJobState
-public enum JobState {
-    UNKNOWN, // this is only for ISSUE #2354
-    PENDING, // init state
-    ETL,     // load data partition, sort and aggregation with etl cluster
-    LOADING, // job is running
-    COMMITTED, // transaction is committed but not visible
-    FINISHED, // transaction is visible and job is finished
-    CANCELLED; // transaction is aborted and job is cancelled
+import org.apache.doris.common.util.MasterDaemon;
 
-    public boolean isFinalState() {
-        return this == FINISHED || this == CANCELLED;
+/**
+ * Schedule Load tasks(jobs) in a polling way.
+ *
+ * @param <U> unit to be scheduled
+ */
+public abstract class PollingLoadScheduler<U> extends MasterDaemon implements LoadScheduler<U> {
+
+    protected PollingLoadScheduler(String name, long intervalMs) {
+        super(name, intervalMs);
+    }
+
+    @Override
+    protected void runAfterCatalogReady() {
+        try {
+            schedule();
+        } catch (Exception e) {
+            handleException(e);
+        }
+    }
+
+    abstract void handleException(Exception exception);
+
+    @Override
+    public synchronized void start() {
+        super.start();
     }
 }
