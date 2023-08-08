@@ -605,6 +605,7 @@ struct TStreamLoadPutRequest {
     44: optional bool enable_profile
     45: optional bool partial_update
     46: optional list<string> table_names
+    47: optional bool enable_sink_v2;
 }
 
 struct TStreamLoadPutResult {
