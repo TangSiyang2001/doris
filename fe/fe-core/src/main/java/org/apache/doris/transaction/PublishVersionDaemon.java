@@ -18,14 +18,19 @@
 package org.apache.doris.transaction;
 
 import org.apache.doris.catalog.Env;
+import org.apache.doris.common.ClientPool;
 import org.apache.doris.common.Config;
 import org.apache.doris.common.util.MasterDaemon;
+import org.apache.doris.ha.FrontendNodeType;
 import org.apache.doris.metric.MetricRepo;
+import org.apache.doris.proto.InternalService;
 import org.apache.doris.system.SystemInfoService;
 import org.apache.doris.task.AgentBatchTask;
 import org.apache.doris.task.AgentTaskExecutor;
 import org.apache.doris.task.AgentTaskQueue;
 import org.apache.doris.task.PublishVersionTask;
+import org.apache.doris.thrift.FrontendService;
+import org.apache.doris.thrift.TNetworkAddress;
 import org.apache.doris.thrift.TPartitionVersionInfo;
 import org.apache.doris.thrift.TTaskType;
 
@@ -36,6 +41,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PublishVersionDaemon extends MasterDaemon {
 
@@ -153,5 +159,14 @@ public class PublishVersionDaemon extends MasterDaemon {
                 }
             }
         } // end for readyTransactionStates
+        // push max journal to followers
+        long journalId = Env.getCurrentEnv().getMaxJournalId();
+        // TODO(rpc): send journal version to followers
+        Env.getCurrentEnv().getFrontends(FrontendNodeType.FOLLOWER)
+                .parallelStream()
+                .map(fe -> new TNetworkAddress(fe.getHost(), fe.getRpcPort()))
+                .forEach(address -> {
+
+                });
     }
 }
