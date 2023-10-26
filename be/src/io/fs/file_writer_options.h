@@ -15,6 +15,18 @@
 // specific language governing permissions and limitations
 // under the License.
 
-suite("test_md5") {
-    qt_select "select md5(k6) from test_query_db.test order by k6"
-}
+#pragma once
+
+namespace doris {
+namespace io {
+
+// Only affects remote file writers
+struct FileWriterOptions {
+    bool write_file_cache = false;
+    bool is_cold_data = false;
+    bool sync_file_data = true;        // Whether flush data into storage system
+    int64_t file_cache_expiration = 0; // Absolute time
+};
+
+} // namespace io
+} // namespace doris

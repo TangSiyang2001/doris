@@ -19,7 +19,6 @@ package org.apache.doris.master;
 
 
 import org.apache.doris.catalog.BinlogConfig;
-import org.apache.doris.catalog.ColocateGroupSchema;
 import org.apache.doris.catalog.ColocateTableIndex;
 import org.apache.doris.catalog.Database;
 import org.apache.doris.catalog.Env;
@@ -43,6 +42,7 @@ import org.apache.doris.common.Config;
 import org.apache.doris.common.MetaNotFoundException;
 import org.apache.doris.common.Pair;
 import org.apache.doris.common.util.Daemon;
+import org.apache.doris.common.util.NetUtils;
 import org.apache.doris.common.util.TimeUtils;
 import org.apache.doris.cooldown.CooldownConf;
 import org.apache.doris.metric.GaugeMetric;
@@ -143,7 +143,8 @@ public class ReportHandler extends Daemon {
         if (backend == null) {
             tStatus.setStatusCode(TStatusCode.INTERNAL_ERROR);
             List<String> errorMsgs = Lists.newArrayList();
-            errorMsgs.add("backend[" + host + ":" + bePort + "] does not exist.");
+            errorMsgs.add("backend[" + NetUtils
+                    .getHostPortInAccessibleFormat(host, bePort) + "] does not exist.");
             tStatus.setErrorMsgs(errorMsgs);
             return result;
         }
@@ -1173,10 +1174,6 @@ public class ReportHandler extends Daemon {
                 int tabletOrderIdx = materializedIndex.getTabletOrderIdx(tabletId);
                 Preconditions.checkState(tabletOrderIdx != -1, "get tablet materializedIndex for %s fail", tabletId);
                 Set<Long> backendsSet = colocateTableIndex.getTabletBackendsByGroup(groupId, tabletOrderIdx);
-                ColocateGroupSchema groupSchema = colocateTableIndex.getGroupSchema(groupId);
-                if (groupSchema != null) {
-                    replicaAlloc = groupSchema.getReplicaAlloc();
-                }
                 TabletStatus status =
                         tablet.getColocateHealthStatus(visibleVersion, replicaAlloc, backendsSet);
                 if (status == TabletStatus.HEALTHY) {

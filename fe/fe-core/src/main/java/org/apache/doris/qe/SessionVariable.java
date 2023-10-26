@@ -1156,7 +1156,7 @@ public class SessionVariable implements Serializable, Writable {
     @VariableMgr.VarAttr(name = ENABLE_FULL_AUTO_ANALYZE,
             description = {"该参数控制是否开启自动收集", "Set false to disable auto analyze"},
             flag = VariableMgr.GLOBAL)
-    public boolean enableFullAutoAnalyze = true;
+    public boolean enableFullAutoAnalyze = false;
 
     @VariableMgr.VarAttr(name = FULL_AUTO_ANALYZE_START_TIME, needForward = true, checker = "checkAnalyzeTimeFormat",
             description = {"该参数定义自动ANALYZE例程的开始时间",
@@ -1173,6 +1173,21 @@ public class SessionVariable implements Serializable, Writable {
     @VariableMgr.VarAttr(name = FASTER_FLOAT_CONVERT,
             description = {"是否启用更快的浮点数转换算法，注意会影响输出格式", "Set true to enable faster float pointer number convert"})
     public boolean fasterFloatConvert = false;
+
+    public static final String IGNORE_SHAPE_NODE = "ignore_shape_nodes";
+
+    public Set<String> getIgnoreShapePlanNodes() {
+        return Arrays.stream(ignoreShapePlanNodes.split(",[\\s]*")).collect(ImmutableSet.toImmutableSet());
+    }
+
+    public void setIgnoreShapePlanNodes(String ignoreShapePlanNodes) {
+        this.ignoreShapePlanNodes = ignoreShapePlanNodes;
+    }
+
+    @VariableMgr.VarAttr(name = IGNORE_SHAPE_NODE,
+            description = {"'explain shape plan' 命令中忽略的PlanNode 类型",
+                    "the plan node type which is ignored in 'explain shape plan' command"})
+    public String ignoreShapePlanNodes = "";
 
     // If this fe is in fuzzy mode, then will use initFuzzyModeVariables to generate some variables,
     // not the default value set in the code.

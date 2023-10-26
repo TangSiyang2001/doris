@@ -360,6 +360,11 @@
                                 "sql-manual/sql-functions/date-time-functions/date_format",
                                 "sql-manual/sql-functions/date-time-functions/datediff",
                                 "sql-manual/sql-functions/date-time-functions/microseconds_add",
+                                "sql-manual/sql-functions/date-time-functions/microseconds-diff",
+                                "sql-manual/sql-functions/date-time-functions/microseconds-sub",
+                                "sql-manual/sql-functions/date-time-functions/milliseconds-add",
+                                "sql-manual/sql-functions/date-time-functions/milliseconds-diff",
+                                "sql-manual/sql-functions/date-time-functions/milliseconds-sub",
                                 "sql-manual/sql-functions/date-time-functions/minutes_add",
                                 "sql-manual/sql-functions/date-time-functions/minutes_diff",
                                 "sql-manual/sql-functions/date-time-functions/minutes_sub",
@@ -685,7 +690,9 @@
                                 "sql-manual/sql-functions/encrypt-digest-functions/md5sum",
                                 "sql-manual/sql-functions/encrypt-digest-functions/sm4",
                                 "sql-manual/sql-functions/encrypt-digest-functions/sm3",
-                                "sql-manual/sql-functions/encrypt-digest-functions/sm3sum"
+                                "sql-manual/sql-functions/encrypt-digest-functions/sm3sum",
+                                "sql-manual/sql-functions/encrypt-digest-functions/sha",
+                                "sql-manual/sql-functions/encrypt-digest-functions/sha2"
                             ]
                         },
                         {
@@ -795,7 +802,6 @@
                                         "sql-manual/sql-reference/Data-Definition-Statements/Alter/ALTER-TABLE-PARTITION",
                                         "sql-manual/sql-reference/Data-Definition-Statements/Alter/ALTER-TABLE-COLUMN",
                                         "sql-manual/sql-reference/Data-Definition-Statements/Alter/ALTER-RESOURCE",
-                                        "sql-manual/sql-reference/Data-Definition-Statements/Alter/ALTER-COLOCATE-GROUP",
                                         "sql-manual/sql-reference/Data-Definition-Statements/Alter/ALTER-WORKLOAD-GROUP",
                                         "sql-manual/sql-reference/Data-Definition-Statements/Alter/CANCEL-ALTER-TABLE",
                                         "sql-manual/sql-reference/Data-Definition-Statements/Alter/ALTER-TABLE-COMMENT",

@@ -47,6 +47,7 @@
 #include "olap/rowset/rowset_writer.h"
 #include "olap/rowset/rowset_writer_context.h"
 #include "olap/rowset/segment_v2/inverted_index_compaction.h"
+#include "olap/rowset/segment_v2/inverted_index_compound_directory.h"
 #include "olap/storage_engine.h"
 #include "olap/storage_policy.h"
 #include "olap/tablet.h"
@@ -366,11 +367,9 @@ Status Compaction::do_compaction_impl(int64_t permits) {
     COUNTER_UPDATE(_merged_rows_counter, stats.merged_rows);
     COUNTER_UPDATE(_filtered_rows_counter, stats.filtered_rows);
 
-    _output_rowset = _output_rs_writer->build();
-    if (_output_rowset == nullptr) {
-        return Status::Error<ROWSET_BUILDER_INIT>("rowset writer build failed. output_version: {}",
-                                                  _output_version.to_string());
-    }
+    RETURN_NOT_OK_STATUS_WITH_WARN(_output_rs_writer->build(_output_rowset),
+                                   fmt::format("rowset writer build failed. output_version: {}",
+                                               _output_version.to_string()));
     // Now we support delete in cumu compaction, to make all data in rowsets whose version
     // is below output_version to be delete in the future base compaction, we should carry
     // all delete predicate in the output rowset.
@@ -543,6 +542,8 @@ Status Compaction::construct_output_rowset_writer(RowsetWriterContext& ctx, bool
                             BetaRowsetSharedPtr rowset =
                                     std::static_pointer_cast<BetaRowset>(src_rs);
                             if (rowset == nullptr) {
+                                LOG(WARNING) << "tablet[" << _tablet->tablet_id()
+                                             << "] rowset is null, will skip index compaction";
                                 return false;
                             }
                             auto fs = rowset->rowset_meta()->fs();
@@ -550,6 +551,9 @@ Status Compaction::construct_output_rowset_writer(RowsetWriterContext& ctx, bool
                             auto index_meta =
                                     rowset->tablet_schema()->get_inverted_index(unique_id);
                             if (index_meta == nullptr) {
+                                LOG(WARNING) << "tablet[" << _tablet->tablet_id()
+                                             << "] index_unique_id[" << unique_id
+                                             << "] index meta is null, will skip index compaction";
                                 return false;
                             }
                             for (auto i = 0; i < rowset->num_segments(); i++) {
@@ -565,8 +569,46 @@ Status Compaction::construct_output_rowset_writer(RowsetWriterContext& ctx, bool
                                     return false;
                                 }
                                 if (!exists) {
-                                    LOG(WARNING) << inverted_index_src_file_path
+                                    LOG(WARNING) << "tablet[" << _tablet->tablet_id()
+                                                 << "] index_unique_id[" << unique_id << "],"
+                                                 << inverted_index_src_file_path
                                                  << " is not exists, will skip index compaction";
+                                    return false;
+                                }
+
+                                // check idx file size
+                                int64_t file_size = 0;
+                                if (fs->file_size(inverted_index_src_file_path, &file_size) !=
+                                    Status::OK()) {
+                                    LOG(ERROR) << inverted_index_src_file_path
+                                               << " fs->file_size error";
+                                    return false;
+                                }
+                                if (file_size == 0) {
+                                    LOG(WARNING) << "tablet[" << _tablet->tablet_id()
+                                                 << "] index_unique_id[" << unique_id << "],"
+                                                 << inverted_index_src_file_path
+                                                 << " is empty file, will skip index compaction";
+                                    return false;
+                                }
+
+                                // check index meta
+                                std::filesystem::path p(inverted_index_src_file_path);
+                                std::string dir_str = p.parent_path().string();
+                                std::string file_str = p.filename().string();
+                                lucene::store::Directory* dir =
+                                        DorisCompoundDirectory::getDirectory(fs, dir_str.c_str());
+                                auto reader = new DorisCompoundReader(dir, file_str.c_str());
+                                std::vector<std::string> files;
+                                reader->list(&files);
+
+                                // why is 3?
+                                // bkd index will write at least 3 files
+                                if (files.size() < 3) {
+                                    LOG(WARNING) << "tablet[" << _tablet->tablet_id()
+                                                 << "] index_unique_id[" << unique_id << "],"
+                                                 << inverted_index_src_file_path
+                                                 << " is corrupted, will skip index compaction";
                                     return false;
                                 }
                             }
@@ -686,7 +728,7 @@ Status Compaction::modify_rowsets(const Merger::Statistics* stats) {
                     StorageEngine::instance()->txn_manager()->set_txn_related_delete_bitmap(
                             it.partition_id, it.transaction_id, _tablet->tablet_id(),
                             _tablet->schema_hash(), _tablet->tablet_uid(), true, it.delete_bitmap,
-                            it.rowset_ids);
+                            it.rowset_ids, nullptr);
                 }
             }
 

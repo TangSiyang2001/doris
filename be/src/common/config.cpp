@@ -302,6 +302,7 @@ DEFINE_mInt32(trash_file_expire_time_sec, "259200");
 // minimum file descriptor number
 // modify them upon necessity
 DEFINE_Int32(min_file_descriptor_number, "60000");
+DEFINE_mBool(disable_segment_cache, "false");
 DEFINE_Int64(index_stream_cache_capacity, "10737418240");
 DEFINE_String(row_cache_mem_limit, "20%");
 
@@ -1083,7 +1084,7 @@ DEFINE_mInt32(scan_thread_nice_value, "0");
 
 DEFINE_mInt32(tablet_schema_cache_recycle_interval, "86400");
 
-DEFINE_Bool(exit_on_exception, "false")
+DEFINE_Bool(exit_on_exception, "false");
 
 DEFINE_Bool(ignore_always_true_predicate_for_segment, "true");
 

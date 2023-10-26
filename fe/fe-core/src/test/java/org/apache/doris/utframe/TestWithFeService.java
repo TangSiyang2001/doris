@@ -392,7 +392,7 @@ public abstract class TestWithFeService {
             InterruptedException {
         int feRpcPort = startFEServer(runningDir);
         List<Backend> bes = Lists.newArrayList();
-        System.out.println("start create backend");
+        System.out.println("start create backend, backend num " + backendNum);
         for (int i = 0; i < backendNum; i++) {
             bes.add(createBackend("127.0.0.1", feRpcPort));
         }
@@ -463,8 +463,8 @@ public abstract class TestWithFeService {
         Backend be = new Backend(Env.getCurrentEnv().getNextId(), backend.getHost(), backend.getHeartbeatPort());
         DiskInfo diskInfo1 = new DiskInfo("/path" + be.getId());
         diskInfo1.setPathHash(be.getId());
-        diskInfo1.setTotalCapacityB(1000000);
-        diskInfo1.setAvailableCapacityB(500000);
+        diskInfo1.setTotalCapacityB(10L << 30);
+        diskInfo1.setAvailableCapacityB(5L << 30);
         diskInfo1.setDataUsedCapacityB(480000);
         Map<String, DiskInfo> disks = Maps.newHashMap();
         disks.put(diskInfo1.getRootPath(), diskInfo1);
