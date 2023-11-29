@@ -18,15 +18,20 @@
 #include "olap/memtable_memory_limiter.h"
 
 #include "common/config.h"
+#include "gutil/integral_types.h"
 #include "olap/memtable_writer.h"
+#include "util/bvar_helper.h"
 #include "util/doris_metrics.h"
 #include "util/mem_info.h"
 #include "util/metrics.h"
+#include "util/runtime_profile.h"
 
 namespace doris {
 DEFINE_GAUGE_METRIC_PROTOTYPE_5ARG(memtable_memory_limiter_mem_consumption, MetricUnit::BYTES, "",
                                    memtable_memory_limiter_mem_consumption,
                                    Labels({{"type", "load"}}));
+static bvar::LatencyRecorder g_memtable_flush_latency("doris_pk",
+                                                      "memtable_reaching_memlimit_flush");
 
 // Calculate the total memory limit of all load tasks on this BE
 static int64_t calc_process_max_load_memory(int64_t process_mem_limit) {
@@ -60,6 +65,7 @@ void MemTableMemoryLimiter::register_writer(std::weak_ptr<MemTableWriter> writer
 }
 
 void MemTableMemoryLimiter::handle_memtable_flush() {
+    SCOPED_BVAR_LATENCY(g_memtable_flush_latency);
     // Check the soft limit.
     DCHECK(_load_soft_mem_limit > 0);
     // Record current memory status.

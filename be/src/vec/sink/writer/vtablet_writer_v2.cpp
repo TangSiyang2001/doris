@@ -402,6 +402,9 @@ Status VTabletWriterV2::append_block(Block& input_block) {
 
     _row_distribution_watch.stop();
 
+    g_sink_v2_write_bytes << block->bytes();
+    g_sink_v2_write_rows << block->rows();
+
     // For each tablet, send its input_rows from block to delta writer
     for (const auto& [tablet_id, rows] : rows_for_tablet) {
         Streams streams;

@@ -41,7 +41,6 @@ void faststring::GrowArray(size_t newcapacity) {
     if (len_ > 0) {
         memcpy(&newdata[0], &data_[0], len_);
     }
-
     if (data_ != initial_data_) {
         Allocator::free(data_, capacity_);
     } else {
