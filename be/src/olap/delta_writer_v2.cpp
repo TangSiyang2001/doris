@@ -153,7 +153,7 @@ Status DeltaWriterV2::write(const vectorized::Block* block, const std::vector<ui
     if (!_is_init && !_is_cancelled) {
         RETURN_IF_ERROR(init());
     }
-    while (_memtable_writer->get_flush_token_stats().flush_running_count > 1) {
+    while (_memtable_writer->get_flush_token_stats().flush_running_count > config::memtable_num_threshold) {
         std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
     SCOPED_RAW_TIMER(&_write_memtable_time);
