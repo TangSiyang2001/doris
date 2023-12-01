@@ -1216,6 +1216,7 @@ DECLARE_Bool(enable_snapshot_action);
 DECLARE_mInt32(variant_max_merged_tablet_schema_size);
 
 DECLARE_Int32(memtable_num_threshold);
+DECLARE_Bool(mm_use_heavy_work_pool);
 #ifdef BE_TEST
 // test s3
 DECLARE_String(test_s3_resource);

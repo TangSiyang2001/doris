@@ -291,7 +291,7 @@ Status LoadStream::close(int64_t src_id, const std::vector<PTabletID>& tablets_t
     }
 
     Status st = Status::OK();
-    {
+    if (config::mm_use_heavy_work_pool) {
         bthread::Mutex mutex;
         std::unique_lock<bthread::Mutex> lock(mutex);
         bthread::ConditionVariable cond;
@@ -319,6 +319,13 @@ Status LoadStream::close(int64_t src_id, const std::vector<PTabletID>& tablets_t
             return Status::Error<ErrorCode::INTERNAL_ERROR>(
                     "there is not enough thread resource for close load");
         }
+    } else {
+        signal::set_signal_task_id(_load_id);
+        for (auto& it : _index_streams_map) {
+            st = it.second->close(_tablets_to_commit, success_tablet_ids, failed_tablet_ids);
+        }
+        LOG(INFO) << "close load " << *this << ", success_tablet_num=" << success_tablet_ids->size()
+                  << ", failed_tablet_num=" << failed_tablet_ids->size();
     }
     return st;
 }
@@ -407,7 +414,7 @@ Status LoadStream::_append_data(const PStreamHeader& header, butil::IOBuf* data)
     }
 
     Status st = Status::OK();
-    {
+    if (config::mm_use_heavy_work_pool) {
         bthread::Mutex mutex;
         std::unique_lock<bthread::Mutex> lock(mutex);
         bthread::ConditionVariable cond;
@@ -424,6 +431,9 @@ Status LoadStream::_append_data(const PStreamHeader& header, butil::IOBuf* data)
             return Status::Error<ErrorCode::INTERNAL_ERROR>(
                     "there is not enough thread resource for append data");
         }
+    } else {
+        signal::set_signal_task_id(_load_id);
+        st = index_stream->append_data(header, data);
     }
     return st;
 }
