@@ -56,6 +56,13 @@
 
 namespace doris::vectorized {
 
+bvar::Adder<int64_t> g_sink_v2_write_bytes;
+bvar::PerSecond<bvar::Adder<int64_t>> g_sink_v2_write_bytes_per_second("sink_v2_throughput_byte",
+                                                                    &g_sink_v2_write_bytes, 60);
+bvar::Adder<int64_t> g_sink_v2_write_rows;
+bvar::PerSecond<bvar::Adder<int64_t>> g_sink_v2_write_rows_per_second("sink_v2_throughput_row",
+                                                                   &g_sink_v2_write_bytes, 60);
+
 VTabletWriterV2::VTabletWriterV2(const TDataSink& t_sink, const VExprContextSPtrs& output_exprs)
         : AsyncResultWriter(output_exprs), _t_sink(t_sink) {
     DCHECK(t_sink.__isset.olap_table_sink);
@@ -401,6 +408,9 @@ Status VTabletWriterV2::append_block(Block& input_block) {
         RETURN_IF_ERROR(_select_streams(tablet_id, rows.partition_id, rows.index_id, streams));
         RETURN_IF_ERROR(_write_memtable(block, tablet_id, rows, streams));
     }
+
+    g_sink_v2_write_bytes << input_bytes;
+    g_sink_v2_write_rows << input_rows;
 
     return Status::OK();
 }
