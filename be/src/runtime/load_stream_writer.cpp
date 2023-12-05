@@ -134,7 +134,7 @@ Status LoadStreamWriter::add_segment(uint32_t segid, const SegmentStatistics& st
 }
 
 Status LoadStreamWriter::close() {
-    std::lock_guard<bthread::Mutex> l(_lock);
+    std::lock_guard<std::mutex> l(_lock);
     if (!_is_init) {
         // if this delta writer is not initialized, but close() is called.
         // which means this tablet has no data loaded, but at least one tablet
