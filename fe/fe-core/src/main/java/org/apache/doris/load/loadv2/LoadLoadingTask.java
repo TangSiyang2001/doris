@@ -38,7 +38,6 @@ import org.apache.doris.thrift.TQueryType;
 import org.apache.doris.thrift.TUniqueId;
 import org.apache.doris.transaction.ErrorTabletInfo;
 import org.apache.doris.transaction.TabletCommitInfo;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -156,7 +155,8 @@ public class LoadLoadingTask extends LoadTask {
         if (leftTimeMs <= 0) {
             throw new LoadException("failed to execute loading task when timeout");
         }
-        int timeoutS = (int) (leftTimeMs / 1000);
+        // 1s is the minimum granularity of execution
+        int timeoutS = Math.max((int) (leftTimeMs / 1000), 1);
         curCoordinator.setTimeout(timeoutS);
 
         try {
