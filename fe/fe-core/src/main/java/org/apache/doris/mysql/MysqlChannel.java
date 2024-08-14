@@ -131,6 +131,7 @@ public class MysqlChannel implements BytesChannel {
 
     public void setSequenceId(int sequenceId) {
         this.sequenceId = sequenceId;
+        LOG.info("set seq id to 0");
     }
 
     public String getRemoteIp() {
@@ -172,7 +173,9 @@ public class MysqlChannel implements BytesChannel {
 
     private void accSequenceId() {
         sequenceId++;
+        LOG.info("add seq id to {}", sequenceId);
         if (sequenceId > 255) {
+            LOG.info("reset sequence id");
             sequenceId = 0;
         }
     }
@@ -318,7 +321,7 @@ public class MysqlChannel implements BytesChannel {
                 byte[] header = result.array();
                 int packetId = header[3] & 0xFF;
                 if (packetId != sequenceId) {
-                    LOG.warn("receive packet sequence id[" + packetId() + "] want to get[" + sequenceId + "]");
+                    LOG.warn("receive packet sequence id[" + packetId + "] want to get[" + sequenceId + "]");
                     throw new IOException("Bad packet sequence.");
                 }
                 int mysqlPacketLength = (header[0] & 0xFF) | ((header[1] & 0XFF) << 8) | ((header[2] & 0XFF) << 16);
